@@ -34,6 +34,7 @@ interface ExecuteMongoOperationArgs {
     | "insertOne"
     | "updateOne"
     | "deleteOne"
+    | "deleteMany"
     | "countDocuments";
   args: string; // JSON string representing arguments for the specific operation
 }
@@ -46,9 +47,14 @@ const isValidExecuteMongoOperationArgs = (
     params !== null &&
     typeof params.collectionName === "string" &&
     typeof params.operation === "string" &&
-    ["find", "insertOne", "updateOne", "deleteOne", "countDocuments"].includes(
-      params.operation
-    ) &&
+    [
+      "find",
+      "insertOne",
+      "updateOne",
+      "deleteOne",
+      "deleteMany",
+      "countDocuments",
+    ].includes(params.operation) &&
     typeof params.args === "string"
   );
 };
@@ -105,6 +111,7 @@ class MongoMcpServer {
                   "insertOne",
                   "updateOne",
                   "deleteOne",
+                  "deleteMany",
                   "countDocuments",
                 ],
                 description: "La operación de MongoDB a ejecutar.",
@@ -199,6 +206,17 @@ class MongoMcpServer {
                 "Missing 'filter' in args for deleteOne"
               );
             result = await collection.deleteOne(
+              parsedArgs.filter,
+              parsedArgs.options as DeleteOptions
+            );
+            break;
+          case "deleteMany":
+            if (!parsedArgs.filter)
+              throw new McpError(
+                ErrorCode.InvalidParams,
+                "Missing 'filter' in args for deleteMany"
+              );
+            result = await collection.deleteMany(
               parsedArgs.filter,
               parsedArgs.options as DeleteOptions
             );
