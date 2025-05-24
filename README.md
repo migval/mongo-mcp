@@ -1,29 +1,64 @@
-# mongo-mcp MCP Server
+# MongoDB MCP Server
 
-A Model Context Protocol server
+Un servidor de Model Context Protocol (MCP) para MongoDB que permite a los modelos de IA interactuar con bases de datos MongoDB de forma directa y eficiente.
 
-This is a TypeScript-based MCP server that implements a simple notes system. It demonstrates core MCP concepts by providing:
+## Características
 
-- Resources representing text notes with URIs and metadata
-- Tools for creating new notes
-- Prompts for generating summaries of notes
+### Herramientas Disponibles
 
-## Features
+**`execute_mongo_operation`** - Ejecuta operaciones de MongoDB en cualquier colección
+- **Operaciones soportadas:**
+  - `find` - Buscar documentos con filtros y opciones
+  - `insertOne` - Insertar un documento
+  - `updateOne` - Actualizar un documento
+  - `deleteOne` - Eliminar un documento
+  - `deleteMany` - Eliminar múltiples documentos
+  - `countDocuments` - Contar documentos que coincidan con un filtro
 
-### Resources
-- List and access notes via `note://` URIs
-- Each note has a title, content and metadata
-- Plain text mime type for simple content access
+### Parámetros
 
-### Tools
-- `create_note` - Create new text notes
-  - Takes title and content as required parameters
-  - Stores note in server state
+Todas las operaciones requieren:
+- `collectionName` - Nombre de la colección de MongoDB
+- `operation` - Tipo de operación a ejecutar
+- `args` - Objeto JSON (como string) con argumentos específicos para la operación
 
-### Prompts
-- `summarize_notes` - Generate a summary of all stored notes
-  - Includes all note contents as embedded resources
-  - Returns structured prompt for LLM summarization
+#### Ejemplos de uso:
+
+**Buscar documentos:**
+```json
+{
+  "collectionName": "users",
+  "operation": "find",
+  "args": "{\"filter\": {\"age\": {\"$gte\": 18}}, \"options\": {\"limit\": 10}}"
+}
+```
+
+**Insertar documento:**
+```json
+{
+  "collectionName": "users",
+  "operation": "insertOne",
+  "args": "{\"document\": {\"name\": \"Juan\", \"age\": 25, \"email\": \"juan@example.com\"}}"
+}
+```
+
+**Actualizar documento:**
+```json
+{
+  "collectionName": "users",
+  "operation": "updateOne",
+  "args": "{\"filter\": {\"_id\": \"...\"},\"update\": {\"$set\": {\"age\": 26}}}"
+}
+```
+
+**Eliminar documentos:**
+```json
+{
+  "collectionName": "users",
+  "operation": "deleteMany",
+  "args": "{\"filter\": {\"active\": false}}"
+}
+```
 
 ## Development
 
@@ -42,29 +77,78 @@ For development with auto-rebuild:
 npm run watch
 ```
 
-## Installation
+## Configuración
 
-To use with Claude Desktop, add the server config:
+### Requisitos
+- Node.js 18+
+- Acceso a una instancia de MongoDB
+- Claude Desktop (para uso con IA)
 
-On MacOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
-On Windows: `%APPDATA%/Claude/claude_desktop_config.json`
+### Instalación y Configuración
+
+1. **Construir el servidor:**
+```bash
+npm install
+npm run build
+```
+
+2. **Configurar en Claude Desktop:**
+
+**En MacOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
+**En Windows:** `%APPDATA%/Claude/claude_desktop_config.json`
 
 ```json
 {
   "mcpServers": {
     "mongo-mcp": {
-      "command": "/path/to/mongo-mcp/build/index.js"
+      "command": "/ruta/completa/a/mongo-mcp/build/index.js",
+      "args": ["mongodb://localhost:27017/mi_base_datos"]
     }
   }
 }
 ```
 
-### Debugging
+3. **Cadena de conexión MongoDB:**
+El servidor requiere una cadena de conexión MongoDB como primer argumento:
+- Local: `mongodb://localhost:27017/nombre_bd`
+- MongoDB Atlas: `mongodb+srv://usuario:password@cluster.mongodb.net/nombre_bd`
+- Con autenticación: `mongodb://usuario:password@host:puerto/nombre_bd`
 
-Since MCP servers communicate over stdio, debugging can be challenging. We recommend using the [MCP Inspector](https://github.com/modelcontextprotocol/inspector), which is available as a package script:
+### Ejemplo de configuración completa:
+
+```json
+{
+  "mcpServers": {
+    "mongo-mcp": {
+      "command": "/Users/usuario/proyectos/mongo-mcp/build/index.js",
+      "args": ["mongodb+srv://miusuario:mipassword@cluster0.xyz.mongodb.net/tienda"]
+    }
+  }
+}
+```
+
+## Uso
+
+Una vez configurado, puedes usar el servidor MCP para realizar operaciones de MongoDB directamente desde Claude Desktop. Ejemplos:
+
+- "Busca todos los usuarios mayores de 18 años en la colección users"
+- "Inserta un nuevo producto en la colección productos"
+- "Actualiza el precio del producto con ID xyz"
+- "Cuenta cuántos pedidos hay en estado 'pendiente'"
+
+## Debugging
+
+Para depurar el servidor MCP, utiliza el MCP Inspector:
 
 ```bash
 npm run inspector
 ```
 
-The Inspector will provide a URL to access debugging tools in your browser.
+El Inspector proporcionará una URL para acceder a las herramientas de depuración en tu navegador.
+
+## Seguridad
+
+- **Nunca** incluyas credenciales de MongoDB directamente en el código
+- Usa variables de entorno para cadenas de conexión sensibles
+- Limita permisos de la base de datos según sea necesario
+- Considera usar conexiones cifradas (SSL/TLS) para MongoDB Atlas
