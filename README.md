@@ -82,46 +82,64 @@ npm run watch
 ### Requisitos
 - Node.js 18+
 - Acceso a una instancia de MongoDB
-- Claude Desktop (para uso con IA)
+- Claude Desktop o Roo Code (para uso con IA)
 
 ### Instalación y Configuración
 
-1. **Construir el servidor:**
-```bash
-npm install
-npm run build
-```
+Para usar el servidor MCP de MongoDB, puedes ejecutarlo directamente con `npx` sin necesidad de una instalación local.
 
-2. **Configurar en Claude Desktop:**
+1.  **Configurar en tu cliente de IA:**
 
-**En MacOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
-**En Windows:** `%APPDATA%/Claude/claude_desktop_config.json`
+    **a. Claude Desktop:**
 
-```json
-{
-  "mcpServers": {
-    "mongo-mcp": {
-      "command": "/ruta/completa/a/mongo-mcp/build/index.js",
-      "args": ["mongodb://localhost:27017/mi_base_datos"]
+    Localiza el archivo de configuración de Claude Desktop:
+    *   **En MacOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
+    *   **En Windows:** `%APPDATA%/Claude/claude_desktop_config.json`
+
+    Añade la siguiente configuración, reemplazando `<cadena_de_conexion_mongodb>` con tu cadena de conexión real:
+
+    ```json
+    {
+      "mcpServers": {
+        "mongo-mcp": {
+          "command": "npx",
+          "args": ["https://github.com/migval/mongo-mcp", "<cadena_de_conexion_mongodb>"]
+        }
+      }
     }
-  }
-}
-```
+    ```
 
-3. **Cadena de conexión MongoDB:**
+    **b. Roo Code:**
+
+    Localiza el archivo de configuración de Roo Code (la ruta puede variar según tu instalación). Comúnmente se encuentra en un directorio de configuración de la aplicación.
+
+    Añade la siguiente configuración, reemplazando `<cadena_de_conexion_mongodb>` con tu cadena de conexión real:
+
+    ```json
+    {
+      "mcpServers": {
+        "mongo-mcp": {
+          "command": "npx",
+          "args": ["https://github.com/migval/mongo-mcp", "<cadena_de_conexion_mongodb>"]
+        }
+      }
+    }
+    ```
+
+2.  **Cadena de conexión MongoDB:**
 El servidor requiere una cadena de conexión MongoDB como primer argumento:
 - Local: `mongodb://localhost:27017/nombre_bd`
 - MongoDB Atlas: `mongodb+srv://usuario:password@cluster.mongodb.net/nombre_bd`
 - Con autenticación: `mongodb://usuario:password@host:puerto/nombre_bd`
 
-### Ejemplo de configuración completa:
+### Ejemplo de configuración completa (para Claude Desktop o Roo Code):
 
 ```json
 {
   "mcpServers": {
     "mongo-mcp": {
-      "command": "/Users/usuario/proyectos/mongo-mcp/build/index.js",
-      "args": ["mongodb+srv://miusuario:mipassword@cluster0.xyz.mongodb.net/tienda"]
+      "command": "npx",
+      "args": ["https://github.com/migval/mongo-mcp", "mongodb+srv://miusuario:mipassword@cluster0.xyz.mongodb.net/tienda"]
     }
   }
 }
@@ -129,7 +147,7 @@ El servidor requiere una cadena de conexión MongoDB como primer argumento:
 
 ## Uso
 
-Una vez configurado, puedes usar el servidor MCP para realizar operaciones de MongoDB directamente desde Claude Desktop. Ejemplos:
+Una vez configurado, puedes usar el servidor MCP para realizar operaciones de MongoDB directamente desde tu cliente de IA (Claude Desktop o Roo Code). Ejemplos:
 
 - "Busca todos los usuarios mayores de 18 años en la colección users"
 - "Inserta un nuevo producto en la colección productos"
